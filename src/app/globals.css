@@ -1,26 +1,86 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Define custom theme colors and variables */
+@theme {
+  --color-chem-dark: #0f172a;
+  --color-chem-dark-secondary: #1e293b;
+  --color-chem-border: #334155;
+  
+  /* Primary blue for interactive elements */
+  --color-chem-blue: #3b82f6;
+  --color-chem-blue-hover: #2563eb;
+  --color-chem-blue-glow: rgba(59, 130, 246, 0.5);
+
+  /* Success green for correct answers/progress */
+  --color-chem-green: #10b981;
+  --color-chem-green-glow: rgba(16, 185, 129, 0.5);
+
+  /* Warning/energy orange for streak/xp */
+  --color-chem-orange: #f59e0b;
+
+  /* Red for incorrect answers */
+  --color-chem-red: #ef4444;
+
+  /* Typography */
+  --font-sans: var(--font-inter);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+/* Base resets & Dark Mode default applied to root */
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0b1120;
+    --foreground: #f8fafc;
+    --card: #141b2d;
+    --card-hover: #1e293b;
   }
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), sans-serif;
+  margin: 0;
+  min-height: 100vh;
+  /* subtle molecular background pattern */
+  background-image: radial-gradient(circle at center, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
+}
+
+/* Glassmorphism Classes */
+@layer utilities {
+  .glass-card {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .glass-header {
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .text-glow-blue {
+    text-shadow: 0 0 10px var(--color-chem-blue-glow);
+  }
+  
+  .border-glow-blue:hover {
+    box-shadow: 0 0 15px var(--color-chem-blue-glow);
+    border-color: var(--color-chem-blue);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
 }
