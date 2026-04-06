@@ -265,7 +265,7 @@ function PracticePageInner() {
 
   if (!sessionStarted) {
     return (
-      <div className="p-8 pb-20 max-w-5xl mx-auto">
+      <div className="p-4 md:p-8 pb-24 md:pb-8 max-w-5xl mx-auto">
         <div className="mb-8 flex justify-between items-end">
           <div>
             <h1 className="text-3xl font-bold text-white mb-2 flex items-center">
@@ -379,7 +379,7 @@ function PracticePageInner() {
 
   if (sessionResult) {
     return (
-      <div className="p-8 pb-20 max-w-2xl mx-auto">
+      <div className="p-4 md:p-8 pb-24 md:pb-8 max-w-2xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2 flex items-center">
             <Trophy className="mr-3 text-amber-400" /> Kết quả
@@ -399,7 +399,7 @@ function PracticePageInner() {
   const progress = ((currentIndex + 1) / sessionQuestions.length) * 100;
 
   return (
-    <div className="p-8 pb-20 max-w-3xl mx-auto">
+    <div className="p-4 md:p-8 pb-24 md:pb-8 max-w-3xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">

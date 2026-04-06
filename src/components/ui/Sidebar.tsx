@@ -15,7 +15,7 @@ export function Sidebar() {
   ];
 
   return (
-    <div className="flex h-screen w-64 flex-col glass-header border-r border-slate-800 bg-slate-900/50">
+    <div className="hidden md:flex h-screen w-64 flex-col glass-header border-r border-slate-800 bg-slate-900/50">
       <div className="flex h-16 items-center px-6 text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
         Hóa 12 CTST
       </div>

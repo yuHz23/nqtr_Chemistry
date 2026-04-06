@@ -5,7 +5,7 @@ import { Flame, Trophy, Target, Zap } from "lucide-react";
 
 export default function Dashboard() {
   return (
-    <div className="p-8 pb-20">
+    <div className="p-4 md:p-8 pb-24 md:pb-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">Chào mừng trở lại, {userStats.name} 👋</h1>
         <p className="text-slate-400">Tiếp tục hành trình chinh phục môn Hóa học 12 CTST.</p>

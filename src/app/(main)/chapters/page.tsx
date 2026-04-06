@@ -142,14 +142,14 @@ export default function ChaptersPage() {
 
   if (selectedChapter !== null) {
     return (
-      <div className="p-8 pb-20 max-w-5xl mx-auto">
+      <div className="p-4 md:p-8 pb-24 md:pb-8 max-w-5xl mx-auto">
         <ChapterDetailView chapterId={selectedChapter} onBack={() => setSelectedChapter(null)} />
       </div>
     );
   }
 
   return (
-    <div className="p-8 pb-20 max-w-5xl mx-auto">
+    <div className="p-4 md:p-8 pb-24 md:pb-8 max-w-5xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2 flex items-center">
           <BookOpen className="mr-3 text-blue-400" /> Lý Thuyết

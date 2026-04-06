@@ -126,7 +126,7 @@ export default function ExamPage() {
   // ====== LOBBY ======
   if (phase === "lobby") {
     return (
-      <div className="p-8 pb-20 max-w-5xl mx-auto">
+      <div className="p-4 md:p-8 pb-24 md:pb-8 max-w-5xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2 flex items-center">
             <GraduationCap className="mr-3 text-red-500" /> Luyện Đề THPT
@@ -183,7 +183,7 @@ export default function ExamPage() {
       grade === "Giỏi" ? "text-emerald-400" : grade === "Khá" ? "text-blue-400" : grade === "Trung bình" ? "text-amber-400" : "text-red-400";
 
     return (
-      <div className="p-8 pb-20 max-w-4xl mx-auto">
+      <div className="p-4 md:p-8 pb-24 md:pb-8 max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2 flex items-center">
             <Trophy className="mr-3 text-amber-400" /> Kết Quả Đề Thi
@@ -260,7 +260,7 @@ export default function ExamPage() {
   const isLowTime = mm === "00" && Number(ss) <= 30;
 
   return (
-    <div className="p-6 pb-20">
+    <div className="p-4 md:p-8 pb-24 md:pb-8">
       {/* Sticky top bar */}
       <div className="sticky top-0 z-20 bg-slate-950/90 backdrop-blur-sm border-b border-slate-800 -mx-6 px-6 py-3 mb-6">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
