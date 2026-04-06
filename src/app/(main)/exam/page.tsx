@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent } from "@/components/ui/Card";
 import { questions, Question } from "@/lib/data/questions";
+import { logExamSession } from "@/lib/progress";
 import {
   GraduationCap,
   Timer,
@@ -78,9 +79,13 @@ export default function ExamPage() {
   const [reviewMode, setReviewMode] = useState(false);
 
   const handleTimeExpire = useCallback(() => {
+    const correct = examQuestions.filter(
+      (q, i) => selectedAnswers[i] === q.answer
+    ).length;
+    logExamSession(selectedMode.label, correct, examQuestions.length);
     setSubmitted(true);
     setPhase("result");
-  }, []);
+  }, [examQuestions, selectedAnswers, selectedMode.label]);
 
   const timerConfig = selectedMode.timeMinutes * 60;
   const { mm, ss, pct: timerPct, start, stop, reset: resetTimer } = useTimer(timerConfig, handleTimeExpire);
@@ -98,6 +103,10 @@ export default function ExamPage() {
 
   const submitExam = () => {
     stop();
+    const correct = examQuestions.filter(
+      (q, i) => selectedAnswers[i] === q.answer
+    ).length;
+    logExamSession(selectedMode.label, correct, examQuestions.length);
     setSubmitted(true);
     setPhase("result");
   };

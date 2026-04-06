@@ -126,7 +126,7 @@ function ChapterDetailView({ chapterId, onBack }: { chapterId: number; onBack: (
 
       {/* Practice link */}
       <div className="mt-10 pt-6 border-t border-slate-800">
-        <Link href="/practice">
+        <Link href={`/practice?chapter=${chapter.id}`}>
           <button className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border text-sm font-medium transition-all ${colorCls} hover:opacity-90`}>
             <FlaskConical size={16} />
             Luyện bài tập chương này →

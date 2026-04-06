@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { questions, Question } from "@/lib/data/questions";
 import { chapters } from "@/lib/data/mock";
+import { logPracticeSession } from "@/lib/progress";
 import {
   PenTool,
   Filter,
@@ -174,8 +176,20 @@ function ResultScreen({
   );
 }
 
-export default function PracticePage() {
+function PracticePageInner() {
+  const searchParams = useSearchParams();
   const [filters, setFilters] = useState<FilterState>({ chapter: null, difficulty: null });
+
+  // Pre-select chapter from URL query param (?chapter=N)
+  useEffect(() => {
+    const ch = searchParams.get("chapter");
+    if (ch) {
+      const chNum = parseInt(ch, 10);
+      if (!isNaN(chNum)) {
+        setFilters((f) => ({ ...f, chapter: chNum }));
+      }
+    }
+  }, [searchParams]);
   const [sessionStarted, setSessionStarted] = useState(false);
   const [sessionQuestions, setSessionQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -226,9 +240,14 @@ export default function PracticePage() {
         selected: answers[i].selected ?? "",
         correct: answers[i].selected === q.answer,
       }));
+      const correct = resultAnswers.filter((r) => r.correct).length;
+      // Detect chapter: if all questions from same chapter, log that chapter
+      const chapterIds = [...new Set(sessionQuestions.map((q) => q.chapter))];
+      const chapter = chapterIds.length === 1 ? chapterIds[0] : null;
+      logPracticeSession(chapter, correct, sessionQuestions.length);
       setSessionResult({
         total: sessionQuestions.length,
-        correct: resultAnswers.filter((r) => r.correct).length,
+        correct,
         answers: resultAnswers,
       });
     }
@@ -452,5 +471,13 @@ export default function PracticePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function PracticePage() {
+  return (
+    <Suspense fallback={null}>
+      <PracticePageInner />
+    </Suspense>
   );
 }

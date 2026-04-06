@@ -1,6 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
-import { LayoutDashboard, BookOpen, PenTool, GraduationCap, BrainCircuit, Zap, User, LogOut } from "lucide-react";
+import { LayoutDashboard, BookOpen, PenTool, GraduationCap, BrainCircuit, Zap, User, LogOut, ShieldAlert } from "lucide-react";
 
 export function Sidebar() {
   const navItems = [
@@ -11,6 +11,7 @@ export function Sidebar() {
     { name: "AI Giải bài", href: "/ai-solver", icon: BrainCircuit },
     { name: "Flashcards", href: "/flashcards", icon: Zap },
     { name: "Tài khoản", href: "/profile", icon: User },
+    { name: "Admin", href: "/admin", icon: ShieldAlert },
   ];
 
   return (
