@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { getSessions, resetAllSessions, PracticeSession } from "@/lib/progress";
 import {
   BarChart2,
@@ -17,7 +18,127 @@ import {
   GraduationCap,
   PenTool,
   ChevronRight,
+  Lock,
 } from "lucide-react";
+
+// Encoded credentials (base64) — not plaintext security, just obfuscation
+const _U = "aHV5aHV5MTYyMw==";
+const _P = "QEh1eTIwMDMqKjop";
+function checkCreds(u: string, p: string) {
+  return btoa(u) === _U && btoa(p) === _P;
+}
+const SESSION_KEY = "chem12_admin_auth";
+
+function LoginGate({ onSuccess }: { onSuccess: () => void }) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [shake, setShake] = useState(false);
+  const [showPass, setShowPass] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (checkCreds(username, password)) {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      onSuccess();
+    } else {
+      setError("Sai tài khoản hoặc mật khẩu!");
+      setShake(true);
+      setTimeout(() => setShake(false), 600);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+      <div
+        className={`w-full max-w-sm transition-transform duration-150 ${
+          shake ? "animate-[shake_0.4s_ease]" : ""
+        }`}
+        style={shake ? { animation: "shake 0.4s ease" } : {}}
+      >
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-[0_0_40px_rgba(99,102,241,0.3)] mb-4">
+            <ShieldAlert className="h-8 w-8 text-white" />
+          </div>
+          <h1 className="text-2xl font-black text-white">Admin Dashboard</h1>
+          <p className="text-slate-500 text-sm mt-1">Hóa Học 12 — Khu vực quản trị</p>
+        </div>
+
+        {/* Form */}
+        <form
+          onSubmit={handleSubmit}
+          className="rounded-2xl border border-slate-800 bg-slate-900/80 backdrop-blur-sm p-8 space-y-4"
+        >
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2 block">
+              Tài khoản
+            </label>
+            <input
+              type="text"
+              autoComplete="username"
+              value={username}
+              onChange={(e) => { setUsername(e.target.value); setError(""); }}
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              placeholder="Nhập username"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2 block">
+              Mật khẩu
+            </label>
+            <div className="relative">
+              <input
+                type={showPass ? "text" : "password"}
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); setError(""); }}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 pr-12 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                placeholder="Nhập mật khẩu"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPass(!showPass)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors text-xs px-1"
+              >
+                {showPass ? "Ẩn" : "Hiện"}
+              </button>
+            </div>
+          </div>
+
+          {error && (
+            <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+              <Lock size={14} />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(59,130,246,0.2)] hover:shadow-[0_0_30px_rgba(59,130,246,0.4)] mt-2"
+          >
+            Đăng nhập
+          </button>
+        </form>
+
+        <p className="text-center text-xs text-slate-700 mt-6">
+          Chỉ dành cho quản trị viên
+        </p>
+      </div>
+
+      <style>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          20% { transform: translateX(-8px); }
+          40% { transform: translateX(8px); }
+          60% { transform: translateX(-6px); }
+          80% { transform: translateX(6px); }
+        }
+      `}</style>
+    </div>
+  );
+}
 
 const CHAPTER_NAMES: Record<number, string> = {
   1: "Este – Lipit",
@@ -92,7 +213,6 @@ function ScoreLine({ sessions }: { sessions: PracticeSession[] }) {
   if (last10.length < 2) {
     return <p className="text-slate-500 text-sm text-center py-6">Cần ít nhất 2 session để hiển thị xu hướng.</p>;
   }
-  const max = 100;
   const points = last10.map((s, i) => {
     const x = (i / (last10.length - 1)) * 100;
     const y = 100 - s.pct;
@@ -179,13 +299,34 @@ function DonutChart({ correct, incorrect }: { correct: number; incorrect: number
 }
 
 export default function AdminPage() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const [sessions, setSessions] = useState<PracticeSession[]>([]);
   const [tab, setTab] = useState<"overview" | "history" | "chapters">("overview");
   const [confirmReset, setConfirmReset] = useState(false);
 
   useEffect(() => {
-    setSessions(getSessions());
+    const ok = sessionStorage.getItem(SESSION_KEY) === "1";
+    // eslint-disable-next-line
+    setIsLoggedIn(ok);
+    setAuthChecked(true);
+    if (ok) setSessions(getSessions());
   }, []);
+
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+    setSessions(getSessions());
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem(SESSION_KEY);
+    setIsLoggedIn(false);
+  };
+
+  // Show nothing until auth check done (prevents flash)
+  if (!authChecked) return null;
+  // Show login gate if not authenticated
+  if (!isLoggedIn) return <LoginGate onSuccess={handleLogin} />;
 
   const handleReset = () => {
     resetAllSessions();
@@ -241,9 +382,15 @@ export default function AdminPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <a href="/" className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors">
+            <Link href="/" className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors">
               <ChevronRight className="rotate-180 h-4 w-4" /> Về trang học
-            </a>
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-red-400 transition-colors"
+            >
+              <Lock size={14} /> Đăng xuất
+            </button>
             {!confirmReset ? (
               <button
                 onClick={() => setConfirmReset(true)}

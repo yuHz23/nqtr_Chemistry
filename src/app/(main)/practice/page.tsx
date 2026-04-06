@@ -149,7 +149,7 @@ function ResultScreen({
       </p>
 
       <div className="w-full grid grid-cols-1 gap-3 mb-8 max-h-64 overflow-y-auto pr-1">
-        {result.answers.map(({ question: q, selected, correct }, i) => (
+        {result.answers.map(({ question: q, correct }, i) => (
           <div
             key={q.id}
             className={`flex items-center gap-3 p-3 rounded-lg border ${correct ? "border-emerald-500/30 bg-emerald-500/5" : "border-red-500/30 bg-red-500/5"}`}
@@ -186,6 +186,7 @@ function PracticePageInner() {
     if (ch) {
       const chNum = parseInt(ch, 10);
       if (!isNaN(chNum)) {
+        // eslint-disable-next-line
         setFilters((f) => ({ ...f, chapter: chNum }));
       }
     }

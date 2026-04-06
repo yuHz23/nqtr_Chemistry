@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
 import { flashcards as allFlashcards } from "@/lib/data/flashcards";
 import { Zap, RotateCw, ChevronLeft, ChevronRight, CheckCircle2, XCircle, Minus, Trophy } from "lucide-react";
 
@@ -65,26 +64,23 @@ export default function FlashcardsPage() {
   const currentCard = sessionCards[index % sessionCards.length];
   const cardState = states[currentCard?.id];
 
-  const flip = useCallback(() => {
+  const flip = () => {
     if (isAnimating) return;
     setFlipped((f) => !f);
-  }, [isAnimating]);
+  };
 
-  const handleRating = useCallback(
-    (quality: 0 | 1 | 2 | 3) => {
-      if (!currentCard || !cardState) return;
-      const newState = sm2Next(cardState, quality);
-      setStates((prev) => ({ ...prev, [currentCard.id]: newState }));
-      setReviewedToday((n) => n + 1);
-      setIsAnimating(true);
-      setTimeout(() => {
-        setFlipped(false);
-        setIndex((i) => i + 1);
-        setIsAnimating(false);
-      }, 300);
-    },
-    [currentCard, cardState]
-  );
+  const handleRating = (quality: 0 | 1 | 2 | 3) => {
+    if (!currentCard || !cardState) return;
+    const newState = sm2Next(cardState, quality);
+    setStates((prev) => ({ ...prev, [currentCard.id]: newState }));
+    setReviewedToday((n) => n + 1);
+    setIsAnimating(true);
+    setTimeout(() => {
+      setFlipped(false);
+      setIndex((i) => i + 1);
+      setIsAnimating(false);
+    }, 300);
+  };
 
   const allDone = index >= sessionCards.length;
 

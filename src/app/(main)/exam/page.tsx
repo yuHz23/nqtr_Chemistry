@@ -75,7 +75,6 @@ export default function ExamPage() {
   const [examQuestions, setExamQuestions] = useState<Question[]>([]);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, "A" | "B" | "C" | "D">>({});
   const [currentQ, setCurrentQ] = useState(0);
-  const [submitted, setSubmitted] = useState(false);
   const [reviewMode, setReviewMode] = useState(false);
 
   const handleTimeExpire = useCallback(() => {
@@ -83,19 +82,17 @@ export default function ExamPage() {
       (q, i) => selectedAnswers[i] === q.answer
     ).length;
     logExamSession(selectedMode.label, correct, examQuestions.length);
-    setSubmitted(true);
     setPhase("result");
   }, [examQuestions, selectedAnswers, selectedMode.label]);
 
   const timerConfig = selectedMode.timeMinutes * 60;
-  const { mm, ss, pct: timerPct, start, stop, reset: resetTimer } = useTimer(timerConfig, handleTimeExpire);
+  const { mm, ss, start, stop, reset: resetTimer } = useTimer(timerConfig, handleTimeExpire);
 
   const startExam = () => {
     const pool = [...questions].sort(() => Math.random() - 0.5);
     setExamQuestions(pool.slice(0, selectedMode.totalQuestions));
     setSelectedAnswers({});
     setCurrentQ(0);
-    setSubmitted(false);
     setReviewMode(false);
     setPhase("exam");
     start();
@@ -107,7 +104,6 @@ export default function ExamPage() {
       (q, i) => selectedAnswers[i] === q.answer
     ).length;
     logExamSession(selectedMode.label, correct, examQuestions.length);
-    setSubmitted(true);
     setPhase("result");
   };
 

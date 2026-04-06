@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
+import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { chapters, userStats } from "@/lib/data/mock";
 import { Flame, Trophy, Target, Zap } from "lucide-react";

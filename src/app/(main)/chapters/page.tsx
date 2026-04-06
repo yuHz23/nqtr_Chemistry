@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+
 import { BookOpen, ChevronRight, FlaskConical, Beaker, ListChecks } from "lucide-react";
 import { chapterTheory } from "@/lib/data/theory";
 import Link from "next/link";

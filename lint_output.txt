@@ -1,0 +1,104 @@
+[0m[0m
+[0m[4mD:\NT\Chemistry\chem12-app\src\app\(main)\chapters\page.tsx[24m[0m
+[0m  [2m4:10[22m  [33mwarning[39m  'Card' is defined but never used         [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m4:16[22m  [33mwarning[39m  'CardContent' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m4:29[22m  [33mwarning[39m  'CardHeader' is defined but never used   [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m4:41[22m  [33mwarning[39m  'CardTitle' is defined but never used    [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mD:\NT\Chemistry\chem12-app\src\app\(main)\dashboard\page.tsx[24m[0m
+[0m  [2m1:29[22m  [33mwarning[39m  'CardHeader' is defined but never used       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m1:41[22m  [33mwarning[39m  'CardTitle' is defined but never used        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m1:52[22m  [33mwarning[39m  'CardDescription' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mD:\NT\Chemistry\chem12-app\src\app\(main)\exam\page.tsx[24m[0m
+[0m  [2m78:10[22m  [33mwarning[39m  'submitted' is assigned a value but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m91:24[22m  [33mwarning[39m  'timerPct' is assigned a value but never used   [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mD:\NT\Chemistry\chem12-app\src\app\(main)\flashcards\page.tsx[24m[0m
+[0m   [2m5:10[22m  [33mwarning[39m  'Badge' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m74:5[22m   [31merror[39m    Compilation Skipped: Existing memoization could not be preserved[0m
+[0m[0m
+[0mReact Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `setStates`, but the source dependencies were [currentCard, cardState]. Inferred different dependency than source.[0m
+[0m[0m
+[0mD:\NT\Chemistry\chem12-app\src\app\(main)\flashcards\page.tsx:74:5[0m
+[0m  72 |[0m
+[0m  73 |   const handleRating = useCallback([0m
+[0m> 74 |     (quality: 0 | 1 | 2 | 3) => {[0m
+[0m     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[0m> 75 |       if (!currentCard || !cardState) return;[0m
+[0m     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[0m> 76 |       const newState = sm2Next(cardState, quality);[0m
+[0m     …[0m
+[0m     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[0m> 84 |       }, 300);[0m
+[0m     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[0m> 85 |     },[0m
+[0m     | ^^^^^^ Could not preserve existing manual memoization[0m
+[0m  86 |     [currentCard, cardState][0m
+[0m  87 |   );[0m
+[0m  88 |  [2mreact-hooks/preserve-manual-memoization[22m[0m
+[0m[0m
+[0m[4mD:\NT\Chemistry\chem12-app\src\app\(main)\practice\page.tsx[24m[0m
+[0m  [2m152:45[22m  [33mwarning[39m  'selected' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m189:9[22m   [31merror[39m    Error: Calling setState synchronously within an effect can trigger cascading renders[0m
+[0m[0m
+[0mEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:[0m
+[0m* Update external systems with the latest state from React.[0m
+[0m* Subscribe for updates from some external system, calling setState in a callback function when external state changes.[0m
+[0m[0m
+[0mCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).[0m
+[0m[0m
+[0mD:\NT\Chemistry\chem12-app\src\app\(main)\practice\page.tsx:189:9[0m
+[0m  187 |       const chNum = parseInt(ch, 10);[0m
+[0m  188 |       if (!isNaN(chNum)) {[0m
+[0m> 189 |         setFilters((f) => ({ ...f, chapter: chNum }));[0m
+[0m      |         ^^^^^^^^^^ Avoid calling setState() directly within an effect[0m
+[0m  190 |       }[0m
+[0m  191 |     }[0m
+[0m  192 |   }, [searchParams]);  [2mreact-hooks/set-state-in-effect[22m[0m
+[0m[0m
+[0m[4mD:\NT\Chemistry\chem12-app\src\app\(main)\profile\page.tsx[24m[0m
+[0m   [2m8:3[22m  [33mwarning[39m  'Flame' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m9:3[22m  [33mwarning[39m  'Trophy' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m26:5[22m  [31merror[39m    Error: Calling setState synchronously within an effect can trigger cascading renders[0m
+[0m[0m
+[0mEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:[0m
+[0m* Update external systems with the latest state from React.[0m
+[0m* Subscribe for updates from some external system, calling setState in a callback function when external state changes.[0m
+[0m[0m
+[0mCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).[0m
+[0m[0m
+[0mD:\NT\Chemistry\chem12-app\src\app\(main)\profile\page.tsx:26:5[0m
+[0m  24 |[0m
+[0m  25 |   useEffect(() => {[0m
+[0m> 26 |     setSessions(getSessions());[0m
+[0m     |     ^^^^^^^^^^^ Avoid calling setState() directly within an effect[0m
+[0m  27 |   }, []);[0m
+[0m  28 |[0m
+[0m  29 |   const overallProgress = Math.round(  [2mreact-hooks/set-state-in-effect[22m[0m
+[0m[0m
+[0m[4mD:\NT\Chemistry\chem12-app\src\app\admin\page.tsx[24m[0m
+[0m  [2m215:9[22m   [33mwarning[39m  'max' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m310:5[22m   [31merror[39m    Error: Calling setState synchronously within an effect can trigger cascading renders[0m
+[0m[0m
+[0mEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:[0m
+[0m* Update external systems with the latest state from React.[0m
+[0m* Subscribe for updates from some external system, calling setState in a callback function when external state changes.[0m
+[0m[0m
+[0mCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).[0m
+[0m[0m
+[0mD:\NT\Chemistry\chem12-app\src\app\admin\page.tsx:310:5[0m
+[0m  308 |   useEffect(() => {[0m
+[0m  309 |     const ok = sessionStorage.getItem(SESSION_KEY) === "1";[0m
+[0m> 310 |     setIsLoggedIn(ok);[0m
+[0m      |     ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect[0m
+[0m  311 |     setAuthChecked(true);[0m
+[0m  312 |     if (ok) setSessions(getSessions());[0m
+[0m  313 |   }, []);  [2mreact-hooks/set-state-in-effect[22m[0m
+[0m  [2m384:13[22m  [31merror[39m    Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       [2m@next/next/no-html-link-for-pages[22m[0m
+[0m[0m
+[0m[4mD:\NT\Chemistry\chem12-app\src\app\page.tsx[24m[0m
+[0m  [2m3:70[22m  [33mwarning[39m  'Target' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[31m[1m✖ 20 problems (5 errors, 15 warnings)[22m[39m[0m
+[0m[31m[1m[22m[39m[0m

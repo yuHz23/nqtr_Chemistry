@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { FlaskConical, BrainCircuit, GraduationCap, ArrowRight, Zap, Target } from "lucide-react";
+import { FlaskConical, BrainCircuit, GraduationCap, ArrowRight, Zap } from "lucide-react";
 
 export default function Home() {
   return (
