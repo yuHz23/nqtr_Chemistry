@@ -295,7 +295,7 @@ function PracticePageInner() {
                   >
                     Tất cả
                   </button>
-                  {chapters.slice(0, 3).map((ch) => (
+                  {chapters.map((ch) => (
                     <button
                       key={ch.id}
                       onClick={() => setFilters((f) => ({ ...f, chapter: ch.id }))}
@@ -308,9 +308,6 @@ function PracticePageInner() {
                       Ch.{ch.id}
                     </button>
                   ))}
-                  <span className="px-3 py-1.5 text-xs text-slate-500 bg-slate-900 rounded-full border border-dashed border-slate-700">
-                    Ch.4–9 sắp có
-                  </span>
                 </div>
               </div>
               <div>
