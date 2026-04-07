@@ -36,6 +36,9 @@ Hãy trả lời ngắn gọn nhưng đầy đủ. Không dài dòng. Tập trun
 const MODELS = [
   "gemini-2.0-flash-lite",
   "gemini-2.0-flash",
+  "gemini-1.5-flash-8b",
+  "gemini-1.5-pro",
+  "gemini-2.5-flash-preview-04-17",
 ];
 
 function getApiKeys(): string[] {
@@ -51,7 +54,9 @@ function isRetryableError(errMsg: string): boolean {
     errMsg.includes("quota") ||
     errMsg.includes("RATE_LIMIT") ||
     errMsg.includes("RESOURCE_EXHAUSTED") ||
-    errMsg.includes("limit")
+    errMsg.includes("limit") ||
+    errMsg.includes("404") ||
+    errMsg.includes("not found")
   );
 }
 
