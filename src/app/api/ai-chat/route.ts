@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
 import { retrieveContext } from "@/lib/rag";
 
@@ -30,47 +30,108 @@ NỘI DUNG CHƯƠNG TRÌNH HÓA 12 CTST (9 chương):
 - Chương 6: Kim loại kiềm, kiềm thổ, nhôm
 - Chương 7: Sắt và một số kim loại quan trọng (Cr, Cu)
 - Chương 8: Phân biệt một số chất vô cơ
-- Chương 9: Hóa học và phát triển bền vững
+- Chương 9: Hóa học và phát triển bền vững`;
 
-Hãy trả lời ngắn gọn nhưng đầy đủ. Không dài dòng. Tập trung vào giá trị học tập.`;
+const MODELS = [
+  "gemini-2.0-flash-lite",
+  "gemini-2.0-flash",
+  "gemini-1.5-flash-8b",
+  "gemini-1.5-pro",
+];
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+function getApiKeys(): string[] {
+  const keysStr = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || "";
+  return keysStr.split(",").map((k) => k.trim()).filter(Boolean);
+}
+
+let requestCounter = 0;
+
+function isRetryableError(errMsg: string): boolean {
+  return (
+    errMsg.includes("429") ||
+    errMsg.includes("quota") ||
+    errMsg.includes("RATE_LIMIT") ||
+    errMsg.includes("RESOURCE_EXHAUSTED") ||
+    errMsg.includes("limit") ||
+    errMsg.includes("404") ||
+    errMsg.includes("not found")
+  );
+}
+
+async function tryWithKey(
+  key: string,
+  modelName: string,
+  messages: { role: string; content: string }[],
+  ragContext: string
+): Promise<string> {
+  const genAI = new GoogleGenerativeAI(key);
+  const systemWithContext = ragContext
+    ? `${SYSTEM_PROMPT}\n\n---\nTÀI LIỆU THAM KHẢO (từ sách Hóa 12 CTST):\n${ragContext}\n---`
+    : SYSTEM_PROMPT;
+
+  const model = genAI.getGenerativeModel({
+    model: modelName,
+    systemInstruction: systemWithContext,
+  });
+
+  const history = messages.slice(0, -1).map((msg) => ({
+    role: msg.role === "assistant" ? "model" : "user",
+    parts: [{ text: msg.content }],
+  }));
+
+  const chat = model.startChat({ history });
+  const lastMessage = messages[messages.length - 1];
+  const result = await chat.sendMessage(lastMessage.content);
+  return result.response.text();
+}
+
+async function callWithRotation(
+  keys: string[],
+  messages: { role: string; content: string }[],
+  ragContext: string
+): Promise<string> {
+  let lastError: unknown = null;
+
+  for (const modelName of MODELS) {
+    for (let attempt = 0; attempt < keys.length; attempt++) {
+      const keyIndex = requestCounter % keys.length;
+      requestCounter++;
+      const key = keys[keyIndex];
+
+      try {
+        console.log(`[AI Chat] Model: ${modelName} | Key #${keyIndex + 1}/${keys.length}`);
+        return await tryWithKey(key, modelName, messages, ragContext);
+      } catch (error: unknown) {
+        lastError = error;
+        const errMsg = error instanceof Error ? error.message : String(error);
+        console.warn(`[AI Chat] ${modelName} Key #${keyIndex + 1} failed: ${errMsg}`);
+        if (!isRetryableError(errMsg)) throw error;
+      }
+    }
+    console.warn(`[AI Chat] All keys exhausted for ${modelName}, trying next model...`);
+  }
+
+  throw lastError;
+}
 
 export async function POST(req: NextRequest) {
   try {
     const { messages } = await req.json();
 
-    if (!process.env.ANTHROPIC_API_KEY) {
+    const apiKeys = getApiKeys();
+    if (apiKeys.length === 0) {
       return NextResponse.json(
-        { error: "API key chưa được cấu hình. Vui lòng thêm ANTHROPIC_API_KEY vào .env.local" },
+        { error: "API key chưa được cấu hình. Vui lòng thêm GEMINI_API_KEYS vào .env.local" },
         { status: 500 }
       );
     }
 
-    // RAG: lấy câu hỏi cuối cùng của user để tìm context liên quan
+    // RAG: tìm context từ sách Hóa 12 CTST
     const lastUserMsg = [...messages].reverse().find((m: { role: string }) => m.role === "user");
     const ragContext = lastUserMsg ? retrieveContext(lastUserMsg.content) : "";
 
-    const systemWithContext = ragContext
-      ? `${SYSTEM_PROMPT}\n\n---\nTÀI LIỆU THAM KHẢO (từ sách Hóa 12 CTST):\n${ragContext}\n---`
-      : SYSTEM_PROMPT;
-
-    const anthropicMessages = messages.map((msg: { role: string; content: string }) => ({
-      role: msg.role === "assistant" ? "assistant" : "user",
-      content: msg.content,
-    }));
-
-    const response = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 2048,
-      system: systemWithContext,
-      messages: anthropicMessages,
-    });
-
-    const text = response.content[0].type === "text" ? response.content[0].text : "";
-    return NextResponse.json({ content: text });
+    const responseText = await callWithRotation(apiKeys, messages, ragContext);
+    return NextResponse.json({ content: responseText });
   } catch (error: unknown) {
     console.error("AI Chat Error:", error);
     const message = error instanceof Error ? error.message : "Lỗi không xác định";
