@@ -1,4 +1,3 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
 import { retrieveContext } from "@/lib/rag";
 
@@ -19,109 +18,19 @@ QUY TẮC:
 7. Cuối mỗi bài giải, đưa ra "Mẹo thi nhanh" hoặc "Lưu ý quan trọng" liên quan.
 8. Nếu câu hỏi không liên quan đến Hóa học, hãy nhẹ nhàng nhắc học sinh quay lại chủ đề Hóa học.
 9. Khi trả lời các bài tính toán, trình bày rõ ràng các phép tính, công thức, số mol, khối lượng.
-10. Ưu tiên sử dụng kiến thức từ TÀI LIỆU THAM KHẢO được cung cấp khi trả lời.
+10. Ưu tiên sử dụng kiến thức từ TÀI LIỆU THAM KHẢO được cung cấp khi trả lời.`;
 
-NỘI DUNG CHƯƠNG TRÌNH HÓA 12 CTST (9 chương):
-- Chương 1: Este – Lipit
-- Chương 2: Carbohydrate (Glucozơ, Saccarozơ, Tinh bột, Xenlulozơ)
-- Chương 3: Amin, Amino acid, Protein
-- Chương 4: Polymer (Polime, tơ, cao su, nhựa)
-- Chương 5: Đại cương về kim loại (tính chất, dãy điện hóa, ăn mòn, điều chế)
-- Chương 6: Kim loại kiềm, kiềm thổ, nhôm
-- Chương 7: Sắt và một số kim loại quan trọng (Cr, Cu)
-- Chương 8: Phân biệt một số chất vô cơ
-- Chương 9: Hóa học và phát triển bền vững`;
-
-const MODELS = [
-  "gemini-2.0-flash-lite",
-  "gemini-2.0-flash",
-  "gemini-1.5-flash-8b",
-  "gemini-1.5-pro",
-];
-
-function getApiKeys(): string[] {
-  const keysStr = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || "";
-  return keysStr.split(",").map((k) => k.trim()).filter(Boolean);
-}
-
-let requestCounter = 0;
-
-function isRetryableError(errMsg: string): boolean {
-  return (
-    errMsg.includes("429") ||
-    errMsg.includes("quota") ||
-    errMsg.includes("RATE_LIMIT") ||
-    errMsg.includes("RESOURCE_EXHAUSTED") ||
-    errMsg.includes("limit") ||
-    errMsg.includes("404") ||
-    errMsg.includes("not found")
-  );
-}
-
-async function tryWithKey(
-  key: string,
-  modelName: string,
-  messages: { role: string; content: string }[],
-  ragContext: string
-): Promise<string> {
-  const genAI = new GoogleGenerativeAI(key);
-  const systemWithContext = ragContext
-    ? `${SYSTEM_PROMPT}\n\n---\nTÀI LIỆU THAM KHẢO (từ sách Hóa 12 CTST):\n${ragContext}\n---`
-    : SYSTEM_PROMPT;
-
-  const model = genAI.getGenerativeModel({
-    model: modelName,
-    systemInstruction: systemWithContext,
-  });
-
-  const history = messages.slice(0, -1).map((msg) => ({
-    role: msg.role === "assistant" ? "model" : "user",
-    parts: [{ text: msg.content }],
-  }));
-
-  const chat = model.startChat({ history });
-  const lastMessage = messages[messages.length - 1];
-  const result = await chat.sendMessage(lastMessage.content);
-  return result.response.text();
-}
-
-async function callWithRotation(
-  keys: string[],
-  messages: { role: string; content: string }[],
-  ragContext: string
-): Promise<string> {
-  let lastError: unknown = null;
-
-  for (const modelName of MODELS) {
-    for (let attempt = 0; attempt < keys.length; attempt++) {
-      const keyIndex = requestCounter % keys.length;
-      requestCounter++;
-      const key = keys[keyIndex];
-
-      try {
-        console.log(`[AI Chat] Model: ${modelName} | Key #${keyIndex + 1}/${keys.length}`);
-        return await tryWithKey(key, modelName, messages, ragContext);
-      } catch (error: unknown) {
-        lastError = error;
-        const errMsg = error instanceof Error ? error.message : String(error);
-        console.warn(`[AI Chat] ${modelName} Key #${keyIndex + 1} failed: ${errMsg}`);
-        if (!isRetryableError(errMsg)) throw error;
-      }
-    }
-    console.warn(`[AI Chat] All keys exhausted for ${modelName}, trying next model...`);
-  }
-
-  throw lastError;
-}
+const HF_API_URL = "https://router.huggingface.co/v1/chat/completions";
+const MODEL = "meta-llama/Llama-3.1-8B-Instruct";
 
 export async function POST(req: NextRequest) {
   try {
     const { messages } = await req.json();
 
-    const apiKeys = getApiKeys();
-    if (apiKeys.length === 0) {
+    const apiKey = process.env.HF_API_KEY;
+    if (!apiKey) {
       return NextResponse.json(
-        { error: "API key chưa được cấu hình. Vui lòng thêm GEMINI_API_KEYS vào .env.local" },
+        { error: "API key chưa được cấu hình. Vui lòng thêm HF_API_KEY vào .env.local" },
         { status: 500 }
       );
     }
@@ -130,8 +39,38 @@ export async function POST(req: NextRequest) {
     const lastUserMsg = [...messages].reverse().find((m: { role: string }) => m.role === "user");
     const ragContext = lastUserMsg ? retrieveContext(lastUserMsg.content) : "";
 
-    const responseText = await callWithRotation(apiKeys, messages, ragContext);
-    return NextResponse.json({ content: responseText });
+    const systemWithContext = ragContext
+      ? `${SYSTEM_PROMPT}\n\n---\nTÀI LIỆU THAM KHẢO (từ sách Hóa 12 CTST):\n${ragContext}\n---`
+      : SYSTEM_PROMPT;
+
+    const response = await fetch(HF_API_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: [
+          { role: "system", content: systemWithContext },
+          ...messages.map((m: { role: string; content: string }) => ({
+            role: m.role === "assistant" ? "assistant" : "user",
+            content: m.content,
+          })),
+        ],
+        max_tokens: 2048,
+        temperature: 0.7,
+      }),
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`HF API error ${response.status}: ${err}`);
+    }
+
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content ?? "";
+    return NextResponse.json({ content: text });
   } catch (error: unknown) {
     console.error("AI Chat Error:", error);
     const message = error instanceof Error ? error.message : "Lỗi không xác định";
