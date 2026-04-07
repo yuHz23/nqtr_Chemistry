@@ -38,7 +38,6 @@ const MODELS = [
   "gemini-2.0-flash",
   "gemini-1.5-flash-8b",
   "gemini-1.5-pro",
-  "gemini-2.5-flash-preview-04-17",
 ];
 
 function getApiKeys(): string[] {
