@@ -1,5 +1,6 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
+import { retrieveContext } from "@/lib/rag";
 
 const SYSTEM_PROMPT = `Bạn là một giáo viên Hóa học chuyên gia, chuyên dạy chương trình Hóa Học 12 theo sách giáo khoa "Chân Trời Sáng Tạo" (CTST) tại Việt Nam. Bạn tên là "Hóa AI".
 
@@ -18,6 +19,7 @@ QUY TẮC:
 7. Cuối mỗi bài giải, đưa ra "Mẹo thi nhanh" hoặc "Lưu ý quan trọng" liên quan.
 8. Nếu câu hỏi không liên quan đến Hóa học, hãy nhẹ nhàng nhắc học sinh quay lại chủ đề Hóa học.
 9. Khi trả lời các bài tính toán, trình bày rõ ràng các phép tính, công thức, số mol, khối lượng.
+10. Ưu tiên sử dụng kiến thức từ TÀI LIỆU THAM KHẢO được cung cấp khi trả lời.
 
 NỘI DUNG CHƯƠNG TRÌNH HÓA 12 CTST (9 chương):
 - Chương 1: Este – Lipit
@@ -32,103 +34,43 @@ NỘI DUNG CHƯƠNG TRÌNH HÓA 12 CTST (9 chương):
 
 Hãy trả lời ngắn gọn nhưng đầy đủ. Không dài dòng. Tập trung vào giá trị học tập.`;
 
-// --- Round-robin API key rotation with model fallback ---
-const MODELS = [
-  "gemini-2.0-flash-lite",
-  "gemini-2.0-flash",
-  "gemini-1.5-flash-8b",
-  "gemini-1.5-pro",
-];
-
-function getApiKeys(): string[] {
-  const keysStr = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || "";
-  return keysStr.split(",").map((k) => k.trim()).filter(Boolean);
-}
-
-let requestCounter = 0;
-
-function isRetryableError(errMsg: string): boolean {
-  return (
-    errMsg.includes("429") ||
-    errMsg.includes("quota") ||
-    errMsg.includes("RATE_LIMIT") ||
-    errMsg.includes("RESOURCE_EXHAUSTED") ||
-    errMsg.includes("limit") ||
-    errMsg.includes("404") ||
-    errMsg.includes("not found")
-  );
-}
-
-async function tryWithKey(
-  key: string,
-  modelName: string,
-  messages: { role: string; content: string }[]
-): Promise<string> {
-  const genAI = new GoogleGenerativeAI(key);
-  const model = genAI.getGenerativeModel({
-    model: modelName,
-    systemInstruction: SYSTEM_PROMPT,
-  });
-
-  const history = messages.slice(0, -1).map((msg) => ({
-    role: msg.role === "assistant" ? "model" : "user",
-    parts: [{ text: msg.content }],
-  }));
-
-  const chat = model.startChat({ history });
-  const lastMessage = messages[messages.length - 1];
-  const result = await chat.sendMessage(lastMessage.content);
-  return result.response.text();
-}
-
-async function callWithRotation(
-  keys: string[],
-  messages: { role: string; content: string }[]
-): Promise<string> {
-  let lastError: unknown = null;
-
-  // Try each model (each has separate quota)
-  for (const modelName of MODELS) {
-    // Try each key with this model
-    for (let attempt = 0; attempt < keys.length; attempt++) {
-      const keyIndex = requestCounter % keys.length;
-      requestCounter++;
-      const key = keys[keyIndex];
-
-      try {
-        console.log(`[AI Chat] Model: ${modelName} | Key #${keyIndex + 1}/${keys.length}`);
-        return await tryWithKey(key, modelName, messages);
-      } catch (error: unknown) {
-        lastError = error;
-        const errMsg = error instanceof Error ? error.message : String(error);
-        console.warn(`[AI Chat] ${modelName} Key #${keyIndex + 1} thất bại: ${errMsg}`);
-
-        if (!isRetryableError(errMsg)) {
-          throw error; // Non-retryable → bail immediately
-        }
-      }
-    }
-    console.warn(`[AI Chat] Tất cả keys hết quota cho ${modelName}, thử model tiếp theo...`);
-  }
-
-  // All models × all keys exhausted
-  throw lastError;
-}
+const client = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
 
 export async function POST(req: NextRequest) {
   try {
     const { messages } = await req.json();
 
-    const apiKeys = getApiKeys();
-    if (apiKeys.length === 0) {
+    if (!process.env.ANTHROPIC_API_KEY) {
       return NextResponse.json(
-        { error: "API key chưa được cấu hình. Vui lòng thêm GEMINI_API_KEYS vào file .env.local" },
+        { error: "API key chưa được cấu hình. Vui lòng thêm ANTHROPIC_API_KEY vào .env.local" },
         { status: 500 }
       );
     }
 
-    const responseText = await callWithRotation(apiKeys, messages);
-    return NextResponse.json({ content: responseText });
+    // RAG: lấy câu hỏi cuối cùng của user để tìm context liên quan
+    const lastUserMsg = [...messages].reverse().find((m: { role: string }) => m.role === "user");
+    const ragContext = lastUserMsg ? retrieveContext(lastUserMsg.content) : "";
+
+    const systemWithContext = ragContext
+      ? `${SYSTEM_PROMPT}\n\n---\nTÀI LIỆU THAM KHẢO (từ sách Hóa 12 CTST):\n${ragContext}\n---`
+      : SYSTEM_PROMPT;
+
+    const anthropicMessages = messages.map((msg: { role: string; content: string }) => ({
+      role: msg.role === "assistant" ? "assistant" : "user",
+      content: msg.content,
+    }));
+
+    const response = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 2048,
+      system: systemWithContext,
+      messages: anthropicMessages,
+    });
+
+    const text = response.content[0].type === "text" ? response.content[0].text : "";
+    return NextResponse.json({ content: text });
   } catch (error: unknown) {
     console.error("AI Chat Error:", error);
     const message = error instanceof Error ? error.message : "Lỗi không xác định";
@@ -138,4 +80,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
